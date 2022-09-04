@@ -23,7 +23,6 @@ class ViewController: UIViewController {
     }
 
     @objc func _general() {
-        print(Date().timeIntervalSince1970)
         for _ in 0..<1000000 {
             let id = general.nextID()
             if let id = id {
