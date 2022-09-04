@@ -1,6 +1,6 @@
 # SnowflakeSwift
 
-Snowflake, use Swift
+Snowflake, use Swift. Generate unique incremental ID
 
 基于`Swift`的雪花算法的实现，采用传统算法，生成递增的唯一ID。如果遇到时钟回拨，生成的为`nil`，让业务层面处理即可
 
