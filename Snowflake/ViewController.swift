@@ -9,7 +9,7 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    let general = SnowflakeSwift(IDCID: 10, machineID: 10)
+    let general = SnowflakeSwift(IDCID: 4, machineID: 30)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,17 +23,19 @@ class ViewController: UIViewController {
     }
 
     @objc func _general() {
-        for i in 0..<6 {
+        print(Date().timeIntervalSince1970)
+        for _ in 0..<1000000 {
             let id = general.nextID()
-            
-            print(id)
-            
             if let id = id {
-                print("_general", general.time(id: id))
+//                print(id)
+//                print("time", general.time(id: id))
+//                print("idc", general.IDC(id: id))
+//                print("mat", general.machine(id: id))
+            } else {
+                print("general error")
             }
-            
-            
         }
+        print(Date().timeIntervalSince1970)
     }
 
 }

@@ -11,6 +11,8 @@ public typealias SnowflakeID = UInt64
 
 //The data structure: symbol(1)-time(41)-IDC(5)machine(5)-seq(12)
 private struct SnowflakeConfig {
+    //占位
+    static let symbolBits: UInt32 = 1
     //时间长度
     static let timeBits: UInt32 = 41
     //机房ID
@@ -30,6 +32,10 @@ public final class SnowflakeSwift {
     
     //WARN: publishMillisecond推荐使用固定值，如果使用Date().timeIntervalSince1970 * 1000 自动获取，会导致时间差重复
     init(publishMillisecond: UInt64 = 1662278876498, IDCID: UInt32, machineID: UInt32) {
+        assert(publishMillisecond <= (1 << SnowflakeConfig.timeBits), "time is too big")
+        assert(IDCID <= (1 << SnowflakeConfig.IDCBits), "idc id is too big")
+        assert(machineID <= (1 << SnowflakeConfig.machineBits), "machine id is too big")
+        
         self.publishMillisecond = publishMillisecond
         self.lastGeneralMillisecond = publishMillisecond
         self.IDC = IDCID & UInt32(1 << SnowflakeConfig.IDCBits - 1)
@@ -66,7 +72,7 @@ public extension SnowflakeSwift {
         let idcParameter = UInt64(self.IDC)
         let idcOffset = UInt64(SnowflakeConfig.machineBits + SnowflakeConfig.sequenceBits)
         
-        let machineParameter = UInt64(self.IDC)
+        let machineParameter = UInt64(self.machine)
         let machineOffset = UInt64(SnowflakeConfig.sequenceBits)
         
         let result = UInt64(timeParameter << timeOffset) | UInt64(idcParameter << idcOffset) | UInt64(machineParameter << machineOffset) | UInt64(self.sequence)
@@ -78,11 +84,13 @@ public extension SnowflakeSwift {
         return UInt64(id >> timeOffset) + publishMillisecond
     }
     
-//    func IDC(id: SnowflakeID) -> UInt32 {
-//
-//    }
-//
-//    func machine(id: SnowflakeID) -> UInt32 {
-//
-//    }
+    func IDC(id: SnowflakeID) -> UInt32 {
+        let step1 = UInt64(id << UInt64(SnowflakeConfig.timeBits + SnowflakeConfig.symbolBits))
+        return UInt32(step1 >> UInt64(SnowflakeConfig.timeBits + SnowflakeConfig.machineBits + SnowflakeConfig.sequenceBits + SnowflakeConfig.symbolBits))
+    }
+
+    func machine(id: SnowflakeID) -> UInt32 {
+        let step1 = UInt64(id << UInt64(SnowflakeConfig.timeBits + SnowflakeConfig.IDCBits + SnowflakeConfig.symbolBits))
+        return UInt32(step1 >> UInt64(SnowflakeConfig.IDCBits + SnowflakeConfig.timeBits + SnowflakeConfig.sequenceBits + SnowflakeConfig.symbolBits))
+    }
 }
