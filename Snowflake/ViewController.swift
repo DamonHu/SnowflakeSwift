@@ -24,7 +24,15 @@ class ViewController: UIViewController {
 
     @objc func _general() {
         for i in 0..<6 {
-            print(general.nextID())
+            let id = general.nextID()
+            
+            print(id)
+            
+            if let id = id {
+                print("_general", general.time(id: id))
+            }
+            
+            
         }
     }
 

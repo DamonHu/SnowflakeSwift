@@ -7,6 +7,8 @@
 
 import Foundation
 
+public typealias SnowflakeID = UInt64
+
 //The data structure: symbol(1)-time(41)-IDC(5)machine(5)-seq(12)
 private struct SnowflakeConfig {
     //时间长度
@@ -19,7 +21,7 @@ private struct SnowflakeConfig {
     static let sequenceBits: UInt32 = 12
 }
 
-class SnowflakeSwift {
+public final class SnowflakeSwift {
     private var machine: UInt32
     private var IDC: UInt32
     private var sequence: UInt32
@@ -30,20 +32,21 @@ class SnowflakeSwift {
     init(publishMillisecond: UInt64 = 1662278876498, IDCID: UInt32, machineID: UInt32) {
         self.publishMillisecond = publishMillisecond
         self.lastGeneralMillisecond = publishMillisecond
-        self.IDC = IDCID & SnowflakeConfig.IDCBits
-        self.machine = machineID & SnowflakeConfig.machineBits
+        self.IDC = IDCID & UInt32(1 << SnowflakeConfig.IDCBits - 1)
+        self.machine = machineID & UInt32(1 << SnowflakeConfig.machineBits - 1)
         self.sequence = 0
     }
-    
+}
+
+public extension SnowflakeSwift {
     func nextID() -> UInt64? {
         var currentTime = UInt64(Date().timeIntervalSince1970 * 1000)
-        
         if lastGeneralMillisecond < currentTime {
             lastGeneralMillisecond = currentTime
             sequence = 0
         } else if lastGeneralMillisecond == currentTime {
             //增加序列
-            sequence = (sequence + 1) & SnowflakeConfig.sequenceBits
+            sequence = ((sequence) + 1) & UInt32(1 << SnowflakeConfig.sequenceBits - 1)
             if sequence == 0 {
                 //睡眠1毫秒
                 usleep(1000)
@@ -70,5 +73,16 @@ class SnowflakeSwift {
         return result
     }
     
+    func time(id: SnowflakeID) -> UInt64 {
+        let timeOffset = UInt64(SnowflakeConfig.IDCBits + SnowflakeConfig.machineBits + SnowflakeConfig.sequenceBits)
+        return UInt64(id >> timeOffset) + publishMillisecond
+    }
     
+//    func IDC(id: SnowflakeID) -> UInt32 {
+//
+//    }
+//
+//    func machine(id: SnowflakeID) -> UInt32 {
+//
+//    }
 }
